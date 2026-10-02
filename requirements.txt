@@ -1,0 +1,9 @@
+numpy
+sounddevice
+torch
+silero-vad
+faster-whisper
+transformers
+accelerate
+websockets>=13
+pytest

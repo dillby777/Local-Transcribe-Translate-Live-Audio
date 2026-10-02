@@ -1,0 +1,29 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Live Transcribe & Translate</title>
+<style>body{font-family:sans-serif;max-width:50em;margin:2em auto}.item{margin:1em 0;padding:.5em;border-left:4px solid #888}.tr{font-weight:bold}</style>
+</head><body>
+<h1>Live Transcribe &amp; Translate</h1>
+<label>Translate to: <select id="lang">
+<option value="es">Spanish</option><option value="uk">Ukrainian</option></select></label>
+<span id="status">connecting…</span>
+<div id="out"></div>
+<script>
+const out=document.getElementById('out'),sel=document.getElementById('lang'),st=document.getElementById('status');
+let ws;
+function connect(){
+  ws=new WebSocket('ws://'+(location.hostname||'localhost')+':8765');
+  ws.onopen=()=>st.textContent='connected';
+  ws.onclose=()=>{st.textContent='disconnected';setTimeout(connect,2000)};
+  ws.onmessage=e=>{
+    const m=JSON.parse(e.data);
+    if(m.type==='config'){sel.value=m.language;return}
+    if(m.type!=='result')return;
+    const d=document.createElement('div');d.className='item';
+    const a=document.createElement('div');a.textContent=m.transcript;
+    const b=document.createElement('div');b.className='tr';b.textContent=m.translation;
+    d.append(a,b);out.prepend(d);
+  };
+}
+sel.onchange=()=>ws.readyState===1&&ws.send(JSON.stringify({type:'set_language',language:sel.value}));
+connect();
+</script></body></html>
